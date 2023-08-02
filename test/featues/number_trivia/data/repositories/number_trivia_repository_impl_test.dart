@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:clean_app/core/error/exceptions.dart';
 import 'package:clean_app/core/error/failure.dart';
 import 'package:clean_app/core/network/network_info.dart';
