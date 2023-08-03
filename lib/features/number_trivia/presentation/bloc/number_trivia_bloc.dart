@@ -36,41 +36,60 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
         getConcreteNumberTrivai = concrete,
         getRandomNumberTrivai = random,
         super(Empty()) {
-    on<NumberTriviaEvent>((event, emit) async {
-      if (event is GetTriviaForConcreteNumber) {
-        final inputEither =
-            inputConverter.stringToUnsignedInteger(event.numberString);
-        inputEither!.fold(
-          // This Method was written in tutor's explanation.
-          // (failure) async* {
-          //   yield const Error(message: invalidInputFailureMessage);
-          // },
-          // Correct way of implementation
-          (failure) => emit(const Error(message: invalidInputFailureMessage)),
-          (integer) async {
-            emit(Loading());
-            final failureOrTrivia =
-                await getConcreteNumberTrivai(Params(number: integer));
-            _eitherLoadedOrErrorState(emit, failureOrTrivia);
-            // failureOrTrivia?.fold(
-            //   (failure) => emit(
-            //     Error(message: _mapFailureToMessage(failure)),
-            //   ),
-            //   (trivia) => emit(Loaded(trivia: trivia!)),
-            // );
-          },
-        );
-      } else if (event is GetTriviaForRandomNumber) {
-        emit(Loading());
-        final failureOrTrivia = await getRandomNumberTrivai(NoParams());
-        _eitherLoadedOrErrorState(emit, failureOrTrivia);
-        // failureOrTrivia?.fold(
-        //   (failure) => emit(
-        //     Error(message: _mapFailureToMessage(failure)),
-        //   ),
-        //   (trivia) => emit(Loaded(trivia: trivia!)),
-        // );
-      }
+    on<NumberTriviaEvent>((event, emit) {
+      // if (event is GetTriviaForConcreteNumber) {
+      //   final inputEither =
+      //       inputConverter.stringToUnsignedInteger(event.numberString);
+      //   inputEither!.fold(
+      //     // This Method was written in tutor's explanation.
+      //     // (failure) async* {
+      //     //   yield const Error(message: invalidInputFailureMessage);
+      //     // },
+      //     // Correct way of implementation
+      //     (failure) => emit(const Error(message: invalidInputFailureMessage)),
+      //     (integer) async {
+      //       emit(Loading());
+      //       final failureOrTrivia =
+      //           await getConcreteNumberTrivai(Params(number: integer));
+      //       _eitherLoadedOrErrorState(emit, failureOrTrivia);
+      //       // failureOrTrivia?.fold(
+      //       //   (failure) => emit(
+      //       //     Error(message: _mapFailureToMessage(failure)),
+      //       //   ),
+      //       //   (trivia) => emit(Loaded(trivia: trivia!)),
+      //       // );
+      //     },
+      //   );
+      // } else if (event is GetTriviaForRandomNumber) {
+      //   emit(Loading());
+      //   final failureOrTrivia = await getRandomNumberTrivai(NoParams());
+      //   _eitherLoadedOrErrorState(emit, failureOrTrivia);
+      //   // failureOrTrivia?.fold(
+      //   //   (failure) => emit(
+      //   //     Error(message: _mapFailureToMessage(failure)),
+      //   //   ),
+      //   //   (trivia) => emit(Loaded(trivia: trivia!)),
+      //   // );
+      // }
+    });
+    on<GetTriviaForConcreteNumber>((event, emit) async {
+      final inputEither =
+          inputConverter.stringToUnsignedInteger(event.numberString);
+      await inputEither!.fold(
+        (failure) async =>
+            emit(const Error(message: invalidInputFailureMessage)),
+        (integer) async {
+          emit(Loading());
+          final failureOrTrivia =
+              await getConcreteNumberTrivai(Params(number: integer));
+          await _eitherLoadedOrErrorState(emit, failureOrTrivia);
+        },
+      );
+    });
+    on<GetTriviaForRandomNumber>((event, emit) async {
+      emit(Loading());
+      final failureOrTrivia = await getRandomNumberTrivai(NoParams());
+      _eitherLoadedOrErrorState(emit, failureOrTrivia);
     });
   }
 }
@@ -78,12 +97,12 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
 _eitherLoadedOrErrorState(
   Emitter<NumberTriviaState> emit,
   Either<Failure, NumberTrivia?>? failureOrTrivia,
-) {
-  failureOrTrivia?.fold(
-    (failure) => emit(
+) async {
+  await failureOrTrivia?.fold(
+    (failure) async => emit(
       Error(message: _mapFailureToMessage(failure)),
     ),
-    (trivia) => emit(Loaded(trivia: trivia!)),
+    (trivia) async => emit(Loaded(trivia: trivia!)),
   );
 }
 
