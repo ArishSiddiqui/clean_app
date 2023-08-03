@@ -82,7 +82,7 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
           emit(Loading());
           final failureOrTrivia =
               await getConcreteNumberTrivai(Params(number: integer));
-          await _eitherLoadedOrErrorState(emit, failureOrTrivia);
+          _eitherLoadedOrErrorState(emit, failureOrTrivia);
         },
       );
     });
@@ -97,12 +97,12 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
 _eitherLoadedOrErrorState(
   Emitter<NumberTriviaState> emit,
   Either<Failure, NumberTrivia?>? failureOrTrivia,
-) async {
-  await failureOrTrivia?.fold(
-    (failure) async => emit(
+) {
+  failureOrTrivia?.fold(
+    (failure) => emit(
       Error(message: _mapFailureToMessage(failure)),
     ),
-    (trivia) async => emit(Loaded(trivia: trivia!)),
+    (trivia) => emit(Loaded(trivia: trivia!)),
   );
 }
 
